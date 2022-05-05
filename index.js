@@ -27,7 +27,7 @@ document.onload = (() => {
 
 })();
 searchButton.addEventListener('click', () => {
-    let url = `http://www.omdbapi.com/?s=`
+    let url = `https://www.omdbapi.com/?s=`
     event.preventDefault();
     // console.log(searchInput.value);
     // 
