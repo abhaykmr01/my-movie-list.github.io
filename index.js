@@ -26,6 +26,46 @@ document.onload = (() => {
 
 
 })();
+const updateSearchResults = debounce((searchKeyword) => {
+    // do the working
+    let url = `https://www.omdbapi.com/?s=`
+        // event.preventDefault();
+        // console.log(searchInput.value);
+        // 
+    url = url + searchKeyword + `&plot=full&apikey=${myKey}&page=1`;
+    console.log(url)
+    xhrRequest = new XMLHttpRequest();
+    xhrRequest.onload = getSearchResult;
+    xhrRequest.open('GET', url);
+    xhrRequest.send();
+})
+
+searchInput.addEventListener("input", e => {
+    if (e.target.value.length > 2)
+        updateSearchResults(e.target.value);
+
+});
+
+function debounce(cb, delay = 1000) {
+    // debounce returning a function
+    // finction takes any amount of arguments
+    // it's generic
+    let timeout
+    return (...args) => {
+        // setting up our timer
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            // call our callback with argument
+            cb(...args)
+        }, delay);
+
+
+    }
+}
+
+
+
+
 searchButton.addEventListener('click', () => {
     let url = `https://www.omdbapi.com/?s=`
     event.preventDefault();
@@ -47,7 +87,11 @@ function getSearchResult() {
 
         let title = element.Title;
         let poster = element.Poster;
-
+        // if no poster is available
+        if (poster == "N/A" || poster == "n/a") {
+            console.log("no image")
+            poster = "./assets/images/No_Image_Available.jpg";
+        }
         let year = element.Year;
         let stype = element.Type;
         let imdbID = element.imdbID;
@@ -71,7 +115,7 @@ function getSearchResult() {
                                     <div>
                                         <a href="https//www.google.com">
                                     <img class="card-img-top"  alt="Thumbnail [100%x225] " style="height: 350px; width: 100%; display: block; " src="${poster}
-                        " data-holder-rendered="true "></a>
+                        " onerror="this.onerror=null; this.src='./assets/images/No_Image_Available.jpg'" data-holder-rendered="true "></a>
                                     <div class="text-white like d-flex justify-content-end position-absolute end-0 top-0 mx-1 ${togggleClass}"  data-list-active="${addedToFav}" style="height: 1.25rem; width: 1.25rem; display: block;">
                                         
                                           <i class="fas fa-heart " onclick="event,addToFav('${encodeURIComponent(JSON.stringify(element))}')"></i>
@@ -93,9 +137,11 @@ function getSearchResult() {
 
 }
 
-function exists(imdbID) {
-    return favList.some(row => row.includes(imdbID));
-}
+// function exists(imdbID) {
+//     return favList.some(row => row.includes(imdbID));
+// }
+
+// Adding debounce feature
 
 function addToFav(encodedObj) {
     // console.log(event);
