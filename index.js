@@ -15,6 +15,7 @@ const searchButton = document.querySelector('.search-button');
 const searchInput = document.querySelector('.search-input');
 let xhrRequest;
 let favList = [];
+let url = "";
 document.onload = (() => {
 
     // Function for checking if alarm list is present in local storage
@@ -28,12 +29,21 @@ document.onload = (() => {
 })();
 const updateSearchResults = debounce((searchKeyword) => {
     // do the working
-    let url = `https://www.omdbapi.com/?s=`
+    url = "";
+    url = `https://www.omdbapi.com/?s=`
         // event.preventDefault();
         // console.log(searchInput.value);
         // 
     url = url + searchKeyword + `&plot=full&apikey=${myKey}&page=1`;
-    console.log(url)
+    //console.log(url)
+    // cheking if its aready been searched in current session
+    if (sessionStorage.getItem(url)) {
+        // get the result from session storage and return without making any request to server
+        let data = sessionStorage.getItem(url);
+        addSearchElements(encodeURIComponent(data));
+
+        return;
+    }
     xhrRequest = new XMLHttpRequest();
     xhrRequest.onload = getSearchResult;
     xhrRequest.open('GET', url);
@@ -67,21 +77,43 @@ function debounce(cb, delay = 1000) {
 
 
 searchButton.addEventListener('click', () => {
-    let url = `https://www.omdbapi.com/?s=`
+    url = "";
+    url = `https://www.omdbapi.com/?s=`
     event.preventDefault();
     // console.log(searchInput.value);
     // 
     url = url + searchInput.value + `&plot=full&apikey=${myKey}&page=1`;
-    console.log(url)
+
+    // cheking if its aready been searched in current session
+    if (sessionStorage.getItem(url)) {
+        // get the result from session storage and return without making any request to server
+        let data = sessionStorage.getItem(url);
+        addSearchElements(encodeURIComponent(data));
+
+        return;
+    }
     xhrRequest = new XMLHttpRequest();
     xhrRequest.onload = getSearchResult;
     xhrRequest.open('GET', url);
     xhrRequest.send();
+    console.log('hello')
 });
 
 function getSearchResult() {
-    var responseJson = JSON.parse(xhrRequest.response);
+    // Save data to sessionStorage
+    sessionStorage.setItem(url, xhrRequest.response);
+
+    // Get saved data from sessionStorage
+    let data = sessionStorage.getItem(url);
+    addSearchElements(encodeURIComponent(data));
+
+}
+
+function addSearchElements(encodedObj) {
+
+    var responseJson = JSON.parse(decodeURIComponent(encodedObj));
     let searchList = responseJson.Search
+    console.log(searchList);
     searchContainer.innerHTML = "";
     searchList.forEach(element => {
 
@@ -89,24 +121,25 @@ function getSearchResult() {
         let poster = element.Poster;
         // if no poster is available
         if (poster == "N/A" || poster == "n/a") {
-            console.log("no image")
+            /// console.log("no image")
             poster = "./assets/images/No_Image_Available.jpg";
         }
         let year = element.Year;
         let stype = element.Type;
         let imdbID = element.imdbID;
         let togggleClass = "";
+        // checking if its already added to fav or not
         let addedToFav = (() => {
             if (favList.some(row => row.includes(imdbID))) {
                 togggleClass = "added-to-fav";
-                console.log("found you")
+
                 return 'active';
 
             }
             return 'inactive';
 
         })();
-        console.log(addedToFav);
+
 
 
 
@@ -134,6 +167,7 @@ function getSearchResult() {
 
     });
     console.log(responseJson);
+
 
 }
 
