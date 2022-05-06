@@ -11,11 +11,16 @@ imdbID: "tt3521164"
 const myKey = "39157e45";
 
 const searchContainer = document.querySelector('[data-search-container]');
-const searchButton = document.querySelector('.search-button');
+// const searchButton = document.querySelector('.search-button');
 const searchInput = document.querySelector('.search-input');
+const pagination = document.querySelector('.pagination');
+
 let xhrRequest;
 let favList = [];
 let url = "";
+let pageNumber, totalPage, searchText;
+
+
 document.onload = (() => {
 
     // Function for checking if alarm list is present in local storage
@@ -27,14 +32,46 @@ document.onload = (() => {
 
 
 })();
+
+function checkElement() {
+    console.log(event.target);
+}
+
 const updateSearchResults = debounce((searchKeyword) => {
-    // do the working
+    requestingServer(searchKeyword)
+});
+// const updateSearchResults = debounce((searchKeyword) => {
+//     // do the working
+//     url = "";
+//     url = `https://www.omdbapi.com/?s=`
+//         // event.preventDefault();
+//         // console.log(searchInput.value);
+//         // 
+//     url = url + searchKeyword + `&plot=full&apikey=${myKey}&page=${pageNumber}`;
+
+//     //console.log(url)
+//     // cheking if its aready been searched in current session
+//     if (sessionStorage.getItem(url)) {
+//         // get the result from session storage and return without making any request to server
+//         let data = sessionStorage.getItem(url);
+//         addSearchElements(encodeURIComponent(data));
+
+//         return;
+//     }
+//     xhrRequest = new XMLHttpRequest();
+//     xhrRequest.onload = getSearchResult;
+//     xhrRequest.open('GET', url);
+//     xhrRequest.send();
+// })
+
+function requestingServer(searchKeyword) {
     url = "";
     url = `https://www.omdbapi.com/?s=`
         // event.preventDefault();
         // console.log(searchInput.value);
         // 
-    url = url + searchKeyword + `&plot=full&apikey=${myKey}&page=1`;
+    url = url + searchKeyword + `&plot=full&apikey=${myKey}&page=${pageNumber}`;
+
     //console.log(url)
     // cheking if its aready been searched in current session
     if (sessionStorage.getItem(url)) {
@@ -48,11 +85,18 @@ const updateSearchResults = debounce((searchKeyword) => {
     xhrRequest.onload = getSearchResult;
     xhrRequest.open('GET', url);
     xhrRequest.send();
-})
+
+}
+
+
 
 searchInput.addEventListener("input", e => {
-    if (e.target.value.length > 2)
-        updateSearchResults(e.target.value);
+    if (e.target.value.length > 2) {
+        // setting the page number to one for new results
+        pageNumber = 1;
+        searchText = e.target.value
+        updateSearchResults(searchText);
+    }
 
 });
 
@@ -76,28 +120,30 @@ function debounce(cb, delay = 1000) {
 
 
 
-searchButton.addEventListener('click', () => {
-    url = "";
-    url = `https://www.omdbapi.com/?s=`
-    event.preventDefault();
-    // console.log(searchInput.value);
-    // 
-    url = url + searchInput.value + `&plot=full&apikey=${myKey}&page=1`;
+// searchButton.addEventListener('click', () => {
+//     url = "";
+//     url = `https://www.omdbapi.com/?s=`
+//     event.preventDefault();
+//     // console.log(searchInput.value);
+//     // 
+//     url = url + searchInput.value + `&plot=full&apikey=${myKey}&page=1`;
 
-    // cheking if its aready been searched in current session
-    if (sessionStorage.getItem(url)) {
-        // get the result from session storage and return without making any request to server
-        let data = sessionStorage.getItem(url);
-        addSearchElements(encodeURIComponent(data));
+//     // cheking if its aready been searched in current session
+//     if (sessionStorage.getItem(url)) {
+//         // get the result from session storage and return without making any request to server
+//         let data = sessionStorage.getItem(url);
+//         addSearchElements(encodeURIComponent(data));
 
-        return;
-    }
-    xhrRequest = new XMLHttpRequest();
-    xhrRequest.onload = getSearchResult;
-    xhrRequest.open('GET', url);
-    xhrRequest.send();
-    console.log('hello')
-});
+//         return;
+//     }
+//     xhrRequest = new XMLHttpRequest();
+//     xhrRequest.onload = getSearchResult;
+//     xhrRequest.open('GET', url);
+//     xhrRequest.send();
+//     console.log('hello')
+// });
+
+
 
 function getSearchResult() {
     // Save data to sessionStorage
@@ -112,6 +158,14 @@ function getSearchResult() {
 function addSearchElements(encodedObj) {
 
     var responseJson = JSON.parse(decodeURIComponent(encodedObj));
+    //find the total page of results
+    if (pageNumber == 1) {
+
+        let totalResults = responseJson.totalResults;
+        // we recieve 10 result per page
+        totalPage = Math.ceil(totalResults / 10);
+
+    }
     let searchList = responseJson.Search
     console.log(searchList);
     searchContainer.innerHTML = "";
@@ -166,7 +220,78 @@ function addSearchElements(encodedObj) {
                             </div>`;
 
     });
+    pagination.innerHTML = "";
+    if (totalPage > 1) {
+        let isPrevDisabled = "";
+        let isNextDisabled = "";
+
+        if (pageNumber == 1) {
+            pagination.innerHTML = ` <li class="current ">
+            <div class="page-number active-page">${pageNumber}</div>
+        </li>
+        <li class="current ">
+        <div class="page-number dots"><i class="fa-solid fa-circle"></i>&nbsp<i class="fa-solid fa-circle"></i></div>
+    </li>
+        <li class="last ">
+            <div class="page-number " onClick="changePage(${totalPage})">${totalPage}</li>   
+        <li calss="next ">
+            <div class="page-number" onClick="changePage(${pageNumber + 1})"><i class="fa-solid fa-angle-right "></i></div>
+        </li>`;
+
+        } else if (pageNumber == totalPage) {
+            pagination.innerHTML = ` 
+            <li class="prev">
+                        <div class="page-number" onClick="changePage(${pageNumber-1})"><i class="fa-solid fa-angle-left"></i></div>
+                    </li>
+                    <li class="first">
+                        <div class="page-number " onClick="changePage(1)">1</div>
+                    </li>
+                    <li class="current ">
+                    <div class="page-number dots"><i class="fa-solid fa-circle"></i>&nbsp<i class="fa-solid fa-circle"></i></div>
+                </li>
+            <li class="current ">
+            <div class="page-number active-page">${pageNumber}</div>
+        </li>`
+
+        } else {
+            pagination.innerHTML = ` 
+            <li class="prev">
+                        <div class="page-number" onClick="changePage(${pageNumber-1})"><i class="fa-solid fa-angle-left"></i></div>
+                    </li>
+                    <li class="first">
+                        <div class="page-number " onClick="changePage(1)">1</div>
+                    </li>
+                    <li class="current ">
+                    <div class="page-number dots"><i class="fa-solid fa-circle"></i>&nbsp<i class="fa-solid fa-circle"></i></div>
+                </li>
+            <li class="current ">
+            <div class="page-number active-page">${pageNumber}</div>
+        </li>
+        <li class="current ">
+            <div class="page-number dots"><i class="fa-solid fa-circle"></i>&nbsp<i class="fa-solid fa-circle"></i></div>
+        </li>
+        <li class="last ">
+            <div class="page-number " onClick="changePage(${totalPage})">${totalPage}</li>
+           
+        <li calss="next ">
+            <div class="page-number" onClick="changePage(${pageNumber + 1})"><i class="fa-solid fa-angle-right "></i></div>
+        </li>`
+
+
+        }
+
+        // pagination.innerHTML = `
+        //                 <li class="page-item ${isPrevDisabled}">
+        //                 <a class="page-link" onclick="event,()=>{ console.log("prev clicked");pageNumber--;requestingServer(searchText)}">prev</a>
+        //                 </li>
+
+        //                 <li class="page-item ${isNextDisabled}">
+        //                     <a class="page-link" onclick="event,()=>{console.log("next clicked");pageNumber++;requestingServer(searchText)}">Next</a>
+        //                 </li>`;
+    }
     console.log(responseJson);
+    console.log(totalPage);
+
 
 
 }
@@ -213,6 +338,15 @@ function addToFav(encodedObj) {
     }
 
 
+
+}
+
+function changePage(value) {
+    pageNumber = value;
+    console.log(pageNumber);
+
+    requestingServer(searchText);
+    window.scrollTo(0, 0);
 
 }
 
