@@ -1,14 +1,4 @@
-//const http=http://www.omdbapi.com/?t=moa&plot=full
-// https:www.omdbapi.com/?t=moana&apikey=39157e45
-
-/*
-Poster: "https://m.media-amazon.com/images/M/MV5BMjI4MzU5NTExNF5BMl5BanBnXkFtZTgwNzY1MTEwMDI@._V1_SX300.jpg"
-Title: "Moana"
-Type: "movie"
-Year: "2016"
-imdbID: "tt3521164"
-*/
-const myKey = "39157e45";
+const myKey = config.API_KEY;
 
 const searchContainer = document.querySelector('#searchContainer');
 // const searchButton = document.querySelector('.search-button');
