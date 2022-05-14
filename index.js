@@ -1,7 +1,5 @@
-const myKey = config.API_KEY;
-
+const myKey = "39157e45";
 const searchContainer = document.querySelector('#searchContainer');
-
 const searchInput = document.querySelector('.search-input');
 const pagination = document.querySelector('.pagination');
 const displaySearchedText = document.querySelector('.searched-text-container');
