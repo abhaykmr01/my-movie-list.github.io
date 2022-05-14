@@ -21,6 +21,7 @@ Javascript, HTML, CSS...
 
 ![App Screenshot](./assets/images/screenshots/ss1.png)
 ![App Screenshot](./assets/images/screenshots/ss2.png)
+![App Screenshot](./assets/images/screenshots/ss6.png)
 ![App Screenshot](./assets/images/screenshots/ss3.png)
 ![App Screenshot](./assets/images/screenshots/ss4.png)
 ![App Screenshot](./assets/images/screenshots/ss5.png)

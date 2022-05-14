@@ -1,7 +1,7 @@
 const myKey = config.API_KEY;
 
 const searchContainer = document.querySelector('#searchContainer');
-// const searchButton = document.querySelector('.search-button');
+
 const searchInput = document.querySelector('.search-input');
 const pagination = document.querySelector('.pagination');
 const displaySearchedText = document.querySelector('.searched-text-container');
@@ -81,41 +81,7 @@ navFavButton.addEventListener("click", function() {
 function searchInputtoString(input) {
     return input.replace(/</g, "&lt;").replace(/>/g, "&gt;")
 }
-const updateSearchResults = debounce((searchKeyword) => {
-    requestingServer(searchKeyword)
-});
 
-function requestingServer(searchKeyword) {
-    url = "";
-    url = `https://www.omdbapi.com/?s=`
-    url = url + searchKeyword + `&plot=full&apikey=${myKey}&page=${pageNumber}`;
-    if (bodyID == "movie-page" && searchInput.value.length < 3) {
-        url = "";
-        moviePageUrl = `https://www.omdbapi.com/?${moviePageSearch}&plot=full&apikey=${myKey}`;
-        url = moviePageUrl;
-    }
-    // cheking if its aready been searched in current session
-    let data;
-    if (sessionStorage.getItem(url)) {
-        // get the result from session storage and return without making any request to server
-        if (bodyID == "movie-page" && searchInput.value.length < 3) {
-            // data = sessionStorage.getItem(url);
-            // console.log("hello", data);
-            addMoviePageElements();
-        } else {
-            data = sessionStorage.getItem(url);
-            addSearchElements();
-        }
-
-        return;
-    }
-    xhrRequest = new XMLHttpRequest();
-    xhrRequest.onload = getSearchResult;
-    xhrRequest.open('GET', url, true);
-    xhrRequest.send();
-    xhrRequest.onerror = function() { console.log("request.failed") }
-
-}
 searchInput.addEventListener("keydown",
     e => {
         if (searchInput.value.length < 3 || (event.key === "Backspace" && searchInput.value.length < 3)) {
@@ -169,9 +135,41 @@ function debounce(cb, delay = 500) {
 
     }
 }
+const updateSearchResults = debounce((searchKeyword) => {
+    requestingServer(searchKeyword)
+});
 
+function requestingServer(searchKeyword) {
+    url = "";
+    url = `https://www.omdbapi.com/?s=`
+    url = url + searchKeyword + `&plot=full&apikey=${myKey}&page=${pageNumber}`;
+    if (bodyID == "movie-page" && searchInput.value.length < 3) {
+        url = "";
+        moviePageUrl = `https://www.omdbapi.com/?${moviePageSearch}&plot=full&apikey=${myKey}`;
+        url = moviePageUrl;
+    }
+    // cheking if its aready been searched in current session
+    let data;
+    if (sessionStorage.getItem(url)) {
+        // get the result from session storage and return without making any request to server
+        if (bodyID == "movie-page" && searchInput.value.length < 3) {
+            // data = sessionStorage.getItem(url);
+            // console.log("hello", data);
+            addMoviePageElements();
+        } else {
+            data = sessionStorage.getItem(url);
+            addSearchElements();
+        }
 
+        return;
+    }
+    xhrRequest = new XMLHttpRequest();
+    xhrRequest.onload = getSearchResult;
+    xhrRequest.open('GET', url, true);
+    xhrRequest.send();
+    xhrRequest.onerror = function() { console.log("request.failed") }
 
+}
 
 function getSearchResult() {
     // Save data to sessionStorage
@@ -209,6 +207,7 @@ function addSearchElements() {
     // If no results are found
     if (responseJson.Response == "False") {
         searchContainer.innerHTML = `<div class="noResults text-center"><img src="./assets/images/noResults.png"></div>;<h1 class="text-center text-white">Sorry, We couldn't find any results</h1>`;
+        pagination.innerHTML = "";
         return;
     }
     //find the total page of results
